@@ -1,1 +1,103 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Dữ liệu Yêu Cầu Dịch Vụ</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+
+    <style>
+        body {
+            background: #f5f6fa;
+            padding: 20px;
+        }
+
+        table {
+            background: #fff;
+        }
+
+        thead th {
+            background: #3498db;
+            color: #fff;
+            text-align: center;
+        }
+
+        tbody td {
+            vertical-align: middle;
+        }
+
+        .status-pending {
+            color: #d35400;
+            font-weight: bold;
+        }
+
+        .status-done {
+            color: green;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h2 class="text-center mb-4">📋 Danh sách yêu cầu dịch vụ</h2>
+
+        <div id="loading" class="alert alert-info">⏳ Đang tải dữ liệu từ Google Sheet...</div>
+
+        <table id="dataTable" class="table table-bordered table-striped d-none">
+            <thead id="tableHead"></thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+
+    <script>
+        // 👉 THAY API JSON CỦA BẠN VÀO ĐÂY
+        const API_URL = "https://script.google.com/macros/s/AKfycbxyz123/exec?mode=json";
+
+        fetch(API_URL)
+            .then(res => res.json())
+            .then(json => {
+                document.getElementById("loading").classList.add("d-none");
+                document.getElementById("dataTable").classList.remove("d-none");
+
+                const headers = json.headers;
+                const rows = json.data;
+
+                // ======= HEADER =======
+                let thHTML = "<tr>";
+                headers.forEach(h => {
+                    thHTML += `<th>${h}</th>`;
+                });
+                thHTML += "</tr>";
+                document.getElementById("tableHead").innerHTML = thHTML;
+
+                // ======= BODY =======
+                let bodyHTML = "";
+                rows.forEach(row => {
+                    bodyHTML += "<tr>";
+
+                    row.forEach((cell, index) => {
+                        let cls = "";
+                        if (index === 4) {
+                            if (cell === "Chưa xử lý") cls = "status-pending";
+                            if (cell === "Hoàn thành") cls = "status-done";
+                        }
+                        bodyHTML += `<td class="${cls}">${cell}</td>`;
+                    });
+
+                    bodyHTML += "</tr>";
+                });
+
+                document.getElementById("tableBody").innerHTML = bodyHTML;
+            })
+            .catch(err => {
+                document.getElementById("loading").classList.remove("alert-info");
+                document.getElementById("loading").classList.add("alert-danger");
+                document.getElementById("loading").innerHTML = "❌ Lỗi tải dữ liệu: " + err;
+            });
+    </script>
+</body>
+</html>
 
