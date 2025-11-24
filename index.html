@@ -8,41 +8,59 @@
   <link rel="stylesheet" href="https://cdn.datatables.net/2.1.8/css/dataTables.bootstrap5.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Roboto', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px 0; }
-    .container { background: white; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); overflow: hidden; }
-    h1 { color: #fff; text-align: center; padding: 30px 20px; background: linear-gradient(135deg, #667eea, #764ba2); margin: -20px -20px 30px -20px; border-radius: 20px 20px 0 0; }
-    .badge-success { background: #d4edda !important; color: #155724 !important; }
-    .badge-warning { background: #fff3cd !important; color: #856404 !important; }
-    .update-time { font-size: 0.9rem; color: #6c757d; }
+    body { font-family: 'Roboto', sans-serif; background: #f8f9fa; padding: 20px 0; }
+    .container { background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); padding: 30px; }
+    h1 { color: #2c3e50; text-align: center; margin-bottom: 30px; font-weight: 700; }
+    .badge-hoanthanh { background: #d4edda !important; color: #155724 !important; }
+    .badge-chuaxuly { background: #fff3cd !important; color: #856404 !important; }
+    .table th { background: #0d6efd; color: white; text-align: center; }
+    .table td { vertical-align: middle; }
+    .dataTables_wrapper .dataTables_length select, .dataTables_wrapper .dataTables_filter input { border-radius: 8px; }
+    @media (max-width: 768px) { .container { padding: 15px; } }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>DANH SÁCH YÊU CẦU DỊCH VỤ / BẢO TRÌ IT</h1>
-    <div class="p-4">
-      <div class="table-responsive">
-        <table id="dataTable" class="table table-striped table-hover">
-          <thead class="table-primary">
+    <h1>DANH SÁCH YÊU CẦU DỊCH VỤ / BẢO TRÌ</h1>
+    <div class="table-responsive">
+      <table id="yeuCauTable" class="table table-striped table-hover table-bordered">
+        <thead>
+          <tr>
+            <th>STT</th>
+            <th>Ngày</th>
+            <th>Nội dung</th>
+            <th>Họ và tên</th>
+            <th>Nơi yêu cầu</th>
+            <th>Tình trạng</th>
+            <th>Ghi chú</th>
+          </tr>
+        </thead>
+        <tbody>
+          <? var rowIndex = 1; ?>
+          <? for (var i = 0; i < dataRows.length; i++) { ?>
+            <? var row = dataRows[i]; ?>
             <tr>
-              <th>STT</th>
-              <th>Ngày</th>
-              <th>Nội dung</th>
-              <th>Họ tên</th>
-              <th>Nơi yêu cầu</th>
-              <th>Tình trạng</th>
-              <th>Ghi chú</th>
+              <td class="text-center"><?= rowIndex++ ?></td>
+              <td><?= row[0] ?></td>
+              <td><strong><?= row[1] ?></strong></td>
+              <td><?= row[2] ?></td>
+              <td><?= row[3] ?></td>
+              <td class="text-center">
+                <? if (row[4] === "Hoàn thành") { ?>
+                  <span class="badge bg-success badge-hoanthanh fs-6">Hoàn thành</span>
+                <? } else { ?>
+                  <span class="badge bg-warning badge-chuaxuly fs-6">Chưa xử lý</span>
+                <? } ?>
+              </td>
+              <td><?= row[5] || "-" ?></td>
             </tr>
-          </thead>
-          <tbody id="tableBody">
-            <!-- Dữ liệu sẽ được load từ Google Sheet -->
-          </tbody>
-        </table>
-      </div>
-      <div class="text-center mt-3">
-        <p class="update-time">Đang tải dữ liệu...</p>
-        <a href="https://docs.google.com/spreadsheets/d/1qyOUDSPjeDwM2D_djvob0SAJtbXAnu2KcxNCR4y9Twg/edit" 
-           target="_blank" class="btn btn-outline-primary">Mở Google Sheet</a>
-      </div>
+          <? } ?>
+        </tbody>
+      </table>
+    </div>
+    <div class="text-center mt-4">
+      <p class="text-muted">Cập nhật lúc: <?= new Date().toLocaleString('vi-VN') ?></p>
+      <a href="<?= SpreadsheetApp.getActiveSpreadsheet().getUrl() ?>" target="_blank" class="btn btn-primary">Mở Google Sheet</a>
     </div>
   </div>
 
@@ -50,41 +68,15 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.datatables.net/2.1.8/js/dataTables.min.js"></script>
   <script src="https://cdn.datatables.net/2.1.8/js/dataTables.bootstrap5.min.js"></script>
-
   <script>
-    // Link API JSON từ Apps Script (hàm getDataApi bạn đã có)
-    const API_URL = "https://script.google.com/macros/s/AKfycbwsydOf2gY8pLLHDXfyje749O0lAowj0z3ys7-W7I92znHV3wqIrPFv5opGGTsxZtNeAg/exec"; // THAY BẰNG LINK THẬT CỦA BẠN
-
     $(document).ready(function() {
-      $.getJSON(API_URL)
-        .done(function(result) {
-          const data = result.data;
-          let html = '';
-          data.forEach((row, index) => {
-            const status = row[4] === "Hoàn thành" 
-              ? '<span class="badge bg-success">Hoàn thành</span>'
-              : '<span class="badge bg-warning">Chưa xử lý</span>';
-            html += `<tr>
-              <td class="text-center">${index + 1}</td>
-              <td>${row[0]}</td>
-              <td><strong>${row[1]}</strong></td>
-              <td>${row[2]}</td>
-              <td>${row[3]}</td>
-              <td class="text-center">${status}</td>
-              <td>${row[5] || "-"}</td>
-            </tr>`;
-          });
-          $('#tableBody').html(html);
-          $('#dataTable').DataTable({
-            language: { url: 'https://cdn.datatables.net/plug-ins/1.13.7/i18n/vi.json' },
-            pageLength: 10,
-            order: [[0, 'desc']]
-          });
-          $('.update-time').text('Cập nhật lúc: ' + new Date().toLocaleString('vi-VN'));
-        })
-        .fail(function() {
-          $('#tableBody').html('<tr><td colspan="7" class="text-center text-danger">Lỗi tải dữ liệu! Vui lòng thử lại.</td></tr>');
-        });
+      $('#yeuCauTable').DataTable({
+        language: { url: 'https://cdn.datatables.net/plug-ins/1.13.7/i18n/vi.json' },
+        pageLength: 10,
+        lengthMenu: [10, 25, 50, 100],
+        order: [[0, 'desc']],
+        columnDefs: [{ orderable: false, targets: 6 }, { className: "text-center", targets: [0, 5] }]
+      });
     });
   </script>
 </body>
