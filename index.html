@@ -3,131 +3,183 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Danh Sách Yêu Cầu IT</title>
-
-  <!-- Bootstrap -->
+  <title>Danh Sách Yêu Cầu Dịch Vụ IT</title>
+  <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-  <!-- DataTables -->
+  <!-- DataTables Bootstrap 5 -->
   <link rel="stylesheet" href="https://cdn.datatables.net/2.1.8/css/dataTables.bootstrap5.min.css">
-
-  <!-- Roboto Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-
+  <!-- Font Google -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
-    body {
-      font-family: 'Roboto', sans-serif;
-      background: #eef2f7;
-      padding: 20px 0;
-      min-height: 100vh;
+    body { 
+      font-family: 'Roboto', sans-serif; 
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); 
+      min-height: 100vh; 
+      padding: 20px 0; 
     }
-    .container-main {
-      background: white;
-      border-radius: 18px;
-      padding: 25px;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+    .container { 
+      background: white; 
+      border-radius: 20px; 
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15); 
+      overflow: hidden; 
     }
-    h1 {
-      font-size: 28px;
-      font-weight: 700;
-      text-align: center;
-      margin-bottom: 25px;
-      color: #343a40;
+    h1 { 
+      background: linear-gradient(135deg, #667eea, #764ba2); 
+      color: white; 
+      padding: 30px; 
+      margin: 0; 
+      text-align: center; 
     }
-    .badge-success {
-      background: #28a745 !important;
+    .badge-success { 
+      background: #d4edda !important; 
+      color: #155724 !important; 
+      padding: 8px 16px; 
+      border-radius: 50px; 
+      font-size: 0.85em; 
     }
-    .badge-warning {
-      background: #ffc107 !important;
-      color: #333 !important;
+    .badge-warning { 
+      background: #fff3cd !important; 
+      color: #856404 !important; 
+      padding: 8px 16px; 
+      border-radius: 50px; 
+      font-size: 0.85em; 
+    }
+    .table th { 
+      background: #0d6efd; 
+      color: white; 
+      text-align: center; 
+      font-weight: 500; 
+    }
+    .update-time { 
+      font-size: 0.9rem; 
+      color: #6c757d; 
+      text-align: center; 
+    }
+    .loading { 
+      text-align: center; 
+      padding: 50px; 
+      color: #6c757d; 
+    }
+    @media (max-width: 768px) { 
+      .container { margin: 10px; } 
+      h1 { font-size: 1.5rem; padding: 20px; } 
     }
   </style>
 </head>
 <body>
-
-  <div class="container container-main">
-    <h1>DANH SÁCH YÊU CẦU DỊCH VỤ / IT – BẢO TRÌ</h1>
-
-    <div class="table-responsive">
-      <table id="dataTable" class="table table-bordered table-hover">
-        <thead class="table-primary">
-          <tr>
-            <th>STT</th>
-            <th>Ngày</th>
-            <th>Nội dung</th>
-            <th>Họ tên</th>
-            <th>Nơi yêu cầu</th>
-            <th>Tình trạng</th>
-            <th>Ghi chú</th>
-          </tr>
-        </thead>
-        <tbody id="tableBody">
-          <tr>
-            <td colspan="7" class="text-center py-4">
-              <div class="spinner-border"></div><br>
-              Đang tải dữ liệu...
-            </td>
-          </tr>
-        </tbody>
-      </table>
+  <div class="container">
+    <h1>DANH SÁCH YÊU CẦU DỊCH VỤ / BẢO TRÌ IT</h1>
+    <div class="p-4">
+      <div class="table-responsive">
+        <table id="dataTable" class="table table-striped table-hover table-bordered">
+          <thead>
+            <tr>
+              <th>STT</th>
+              <th>Ngày</th>
+              <th>Nội dung</th>
+              <th>Họ và tên</th>
+              <th>Nơi yêu cầu</th>
+              <th>Tình trạng</th>
+              <th>Ghi chú</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr>
+              <td colspan="7" class="loading">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Đang tải...</span>
+                </div>
+                <br>Đang tải dữ liệu từ Google Sheet...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="text-center mt-4">
+        <p class="update-time">Cập nhật lúc: <span id="lastUpdate">-</span></p>
+        <a href="https://docs.google.com/spreadsheets/d/1qyOUDSPjeDwM2D_djvob0SAJtbXAnu2KcxNCR4y9Twg/edit" 
+           target="_blank" class="btn btn-outline-primary btn-lg">Mở Google Sheet gốc</a>
+      </div>
     </div>
-
-    <p class="text-center mt-3"><b>Cập nhật lúc:</b> <span id="lastUpdate">Đang cập nhật...</span></p>
   </div>
 
-  <!-- JS -->
+  <!-- JavaScript -->
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.datatables.net/2.1.8/js/dataTables.min.js"></script>
   <script src="https://cdn.datatables.net/2.1.8/js/dataTables.bootstrap5.min.js"></script>
 
   <script>
-    // THAY API_URL = link Apps Script Web App của bạn
-    const API_URL = "https://script.google.com/macros/s/AKfycbwg9g4XKK5qRAXO2gRkmLWMQV4bG3RdeB84MalWrHmgbCEZaqA2k92WHcgT81y0ChSZsA/exec";
+    // THAY BẰNG LINK API JSON THẬT CỦA BẠN (từ hàm getDataApi, deploy với "Anyone")
+    const API_URL = "https://script.google.com/macros/s/AKfycbzADwxDgsnS5L4Urez3bbEiYuPYSymPsFM5E1JKI-nMRYDyvZLc9eJQkm3_-sF3fuFLFQ/exec";  // Hoặc link JSON riêng
 
-    $(document).ready(function () {
-      fetch(API_URL)
-        .then(res => res.json())
-        .then(result => {
-          const data = result.data || [];
-          let html = "";
-
-          data.forEach((row, i) => {
-            const status = row[4] === "Hoàn thành"
+    $(document).ready(function() {
+      // Fetch dữ liệu từ API
+      $.getJSON(API_URL)
+        .done(function(result) {
+          const data = result.data || [];  // Giả sử API trả {data: [[row1], [row2], ...]}
+          let html = '';
+          data.forEach((row, index) => {
+            const stt = index + 1;
+            const ngay = row[0] || '-';
+            const noiDung = row[1] || '-';
+            const hoTen = row[2] || '-';
+            const noiYeuCau = row[3] || '-';
+            const tinhTrang = row[4] || 'Chưa xử lý';
+            const ghiChu = row[5] || '-';
+            
+            // Badge cho tình trạng
+            const badge = tinhTrang === 'Hoàn thành' 
               ? '<span class="badge badge-success">Hoàn thành</span>'
               : '<span class="badge badge-warning">Chưa xử lý</span>';
-
+            
             html += `
               <tr>
-                <td class="text-center fw-bold">${i + 1}</td>
-                <td>${row[0]}</td>
-                <td><b>${row[1]}</b></td>
-                <td>${row[2]}</td>
-                <td>${row[3]}</td>
-                <td class="text-center">${status}</td>
-                <td>${row[5] || "-"}</td>
-              </tr>`;
+                <td class="text-center fw-bold">${stt}</td>
+                <td class="text-center">${ngay}</td>
+                <td><strong>${noiDung}</strong></td>
+                <td>${hoTen}</td>
+                <td>${noiYeuCau}</td>
+                <td class="text-center">${badge}</td>
+                <td>${ghiChu}</td>
+              </tr>
+            `;
           });
-
-          document.getElementById("tableBody").innerHTML = html;
-
-          $("#dataTable").DataTable({
-            language: { url: "https://cdn.datatables.net/plug-ins/1.13.7/i18n/vi.json" },
-            pageLength: 10,
-            order: [[0, "desc"]]
+          
+          // Hiển thị dữ liệu
+          $('#tableBody').html(html);
+          
+          // Khởi tạo DataTable (tìm kiếm, phân trang, sắp xếp)
+          $('#dataTable').DataTable({
+            language: {
+              url: 'https://cdn.datatables.net/plug-ins/1.13.7/i18n/vi.json'  // Tiếng Việt
+            },
+            pageLength: 10,  // 10 dòng/trang
+            lengthMenu: [10, 25, 50, 100],
+            order: [[0, 'desc']],  // Sắp xếp theo STT mới nhất trước
+            columnDefs: [
+              { orderable: false, targets: [5, 6] },  // Không sắp xếp cột Tình trạng & Ghi chú
+              { className: "text-center", targets: [0, 1, 5] }  // Căn giữa STT, Ngày, Tình trạng
+            ],
+            destroy: true  // Phá hủy nếu cần reload
           });
-
-          document.getElementById("lastUpdate").textContent =
-            new Date().toLocaleString("vi-VN");
+          
+          // Cập nhật thời gian
+          $('#lastUpdate').text(new Date().toLocaleString('vi-VN'));
         })
-        .catch(err => {
-          document.getElementById("tableBody").innerHTML =
-            `<tr><td colspan="7" class="text-danger text-center py-4">
-              Lỗi tải dữ liệu: ${err}
-            </td></tr>`;
+        .fail(function(xhr, status, error) {
+          console.error('Lỗi tải dữ liệu:', error);
+          $('#tableBody').html(`
+            <tr>
+              <td colspan="7" class="text-center text-danger py-4">
+                <i class="bi bi-exclamation-triangle-fill fs-1 mb-2"></i><br>
+                Lỗi tải dữ liệu! Kiểm tra link API hoặc quyền truy cập.<br>
+                <small>Chi tiết lỗi: ${error}</small>
+              </td>
+            </tr>
+          `);
         });
     });
   </script>
-
 </body>
 </html>
