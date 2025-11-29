@@ -27,8 +27,19 @@
 <table id="sheetTable" class="display" width="100%"></table>
 
 <script>
-  // 🔥 NHỚ THAY URL API GOOGLE SHEET CỦA BẠN
+  // 🔥 API Google Sheet
   const API_URL = "https://script.google.com/macros/s/AKfycbyFy-59jdIR1J9e-WCZ0BdOO8XW-EbaD8GsoSRBDK-AI1hovguUE1oYGvfburFp13PQnA/exec";
+
+  // Hàm định dạng ngày yyyy-mm-dd → dd/mm/yyyy
+  function formatVNDate(dateStr) {
+    if (!dateStr) return "";
+    let d = new Date(dateStr);
+    if (isNaN(d)) return dateStr; // nếu không parse được thì trả nguyên
+    let day = String(d.getDate()).padStart(2, "0");
+    let month = String(d.getMonth() + 1).padStart(2, "0");
+    let year = d.getFullYear();
+    return `${day}/${month}/${year}`;
+  }
 
   fetch(API_URL)
     .then(res => res.json())
@@ -36,8 +47,18 @@
       const header = json[0];   // dòng tiêu đề
       const data = json.slice(1); // dữ liệu
 
+      // ⚡ Chọn cột ngày (index)
+      const DATE_COLUMN_INDEX = 3; // cột số 4 (0-based: 0,1,2,3)
+
+      // Chuyển ngày trong dữ liệu
+      const formattedData = data.map(row => {
+        let newRow = [...row];
+        newRow[DATE_COLUMN_INDEX] = formatVNDate(row[DATE_COLUMN_INDEX]);
+        return newRow;
+      });
+
       $("#sheetTable").DataTable({
-        data: data,
+        data: formattedData,
         columns: header.map(h => ({ title: h })),
         pageLength: 10,
         responsive: true
