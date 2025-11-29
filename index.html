@@ -111,7 +111,81 @@
 
   <script>
     // THAY BẰNG LINK API JSON THẬT CỦA BẠN (từ hàm getDataApi, deploy với "Anyone")
-    const API_URL = "https://script.google.com/macros/s/AKfycbz_wWMf35G_CJIO9kKIsNyTuUFipaS-OoFR1qgbLroYxXR5Ot9hRuWClh4xRhjp-OBFYg/exec";  // Hoặc link JSON riêng
+  const API_URL = "";  // Để trống tạm, dùng dữ liệu mẫu dưới
+
+// DỮ LIỆU MẪU TỪ SHEET CỦA BẠN (test trước, sau thay API thật)
+const sampleData = {
+  headers: ["Ngày", "Nội dung", "Họ và tên", "Nơi yêu cầu", "Tình trạng", "Ghi chú"],
+  data: [
+    ["29/11/2025", "Máy in hư", "Lê Văn Tài", "TYTP Minh Phụng", "Hoàn thành", "-"],
+    ["28/11/2025", "Máy tính chậm", "Nam", "TYTP Phú Thọ", "Chưa xử lý", "Cần kiểm tra RAM"],
+    ["27/11/2025", "Lỗi phần mềm", "Thái", "TYTP Minh Phụng - Điểm y tế 2", "Chưa xử lý", ""],
+    ["26/11/2025", "Màn chiếu hỏng", "Hiển", "TYTP Hòa Bình", "Hoàn thành", "Đã thay mới"],
+    ["25/11/2025", "Chuột bàn phím lỗi", "Iiiiiiii", "TYTP Bình Thới", "Chưa xử lý", "-"],
+    ["24/11/2025", "Office win lỗi", "0pppppp", "TYTP Phú Thọ", "Chưa xử lý", ""],
+    ["23/11/2025", "Treo máy tính", "Lê văn Tài", "TYTP Bình Thới - Điểm y tế 2", "Chưa xử lý", "-"]
+  ]
+};
+
+$(document).ready(function() {
+  let data = sampleData.data;  // Dùng mẫu tạm
+  if (API_URL) {
+    $.getJSON(API_URL).done(function(result) {
+      data = result.data || [];  // Nếu API OK thì dùng thật
+    }).fail(function() {
+      console.log('API fail, dùng mẫu');  // Log để debug
+    }).always(function() {
+      buildTable(data);  // Xây table
+    });
+  } else {
+    buildTable(data);  // Dùng mẫu nếu không có API
+  }
+
+  function buildTable(data) {
+    let html = '';
+    data.forEach((row, index) => {
+      const stt = index + 1;
+      const ngay = row[0] || '-';
+      const noiDung = row[1] || '-';
+      const hoTen = row[2] || '-';
+      const noiYeuCau = row[3] || '-';
+      const tinhTrang = row[4] || 'Chưa xử lý';
+      const ghiChu = row[5] || '-';
+      
+      const badge = tinhTrang === 'Hoàn thành' 
+        ? '<span class="badge badge-success">Hoàn thành</span>'
+        : '<span class="badge badge-warning">Chưa xử lý</span>';
+      
+      html += `
+        <tr>
+          <td class="text-center fw-bold">${stt}</td>
+          <td class="text-center">${ngay}</td>
+          <td><strong>${noiDung}</strong></td>
+          <td>${hoTen}</td>
+          <td>${noiYeuCau}</td>
+          <td class="text-center">${badge}</td>
+          <td>${ghiChu}</td>
+        </tr>
+      `;
+    });
+    
+    $('#tableBody').html(html);
+    
+    $('#dataTable').DataTable({
+      language: { url: 'https://cdn.datatables.net/plug-ins/1.13.7/i18n/vi.json' },
+      pageLength: 10,
+      lengthMenu: [10, 25, 50, 100],
+      order: [[0, 'desc']],
+      columnDefs: [
+        { orderable: false, targets: [5, 6] },
+        { className: "text-center", targets: [0, 1, 5] }
+      ],
+      destroy: true
+    });
+    
+    $('#lastUpdate').text(new Date().toLocaleString('vi-VN'));
+  }
+});
 
     $(document).ready(function() {
       // Fetch dữ liệu từ API
