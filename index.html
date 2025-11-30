@@ -20,30 +20,10 @@
   <style>
     body { padding: 30px; background: #f8f9fa; }
     .card { border-radius: 12px; }
-
-    /* Spinner nền mờ */
-    #loadingOverlay {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(255, 255, 255, 0.7);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-      display: none;
-    }
   </style>
 </head>
 
 <body>
-
-<!-- Overlay Loading -->
-<div id="loadingOverlay">
-  <div class="spinner-border text-primary" style="width: 4rem; height: 4rem;" role="status">
-    <span class="visually-hidden">Đang tải...</span>
-  </div>
-</div>
 
 <div class="container">
   <div class="card shadow">
@@ -56,13 +36,10 @@
 
 <script>
   const API_URL = "https://script.google.com/macros/s/AKfycbyFy-59jdIR1J9e-WCZ0BdOO8XW-EbaD8GsoSRBDK-AI1hovguUE1oYGvfburFp13PQnA/exec";
-  const REFRESH_TIME = 10000; 
+  const REFRESH_TIME = 10000; // 10 giây refresh 1 lần
   let dataTable;
 
-  function showLoading(show) {
-    document.getElementById("loadingOverlay").style.display = show ? "flex" : "none";
-  }
-
+  // Format yyyy-mm-dd → dd/mm/yyyy
   function formatVNDate(dateStr) {
     if (!dateStr) return "";
     let d = new Date(dateStr);
@@ -75,8 +52,6 @@
 
   async function loadData(firstLoad = false) {
     try {
-      showLoading(true);
-
       const res = await fetch(API_URL);
       const json = await res.json();
 
@@ -91,13 +66,16 @@
         let d = new Date(row[DATE_INDEX]);
         newRow[DATE_INDEX] = formatVNDate(row[DATE_INDEX]);
 
+        // Timestamp hidden for sorting
         newRow.push(d.getTime());
         return newRow;
       });
 
+      // Add hidden sort column
       header.push("hidden_sort_date");
 
       if (firstLoad) {
+        // Khởi tạo DataTable lần đầu
         dataTable = $("#sheetTable").DataTable({
           data: formattedData,
           columns: header.map((h, idx) => ({
@@ -107,11 +85,10 @@
           order: [[header.length - 1, "desc"]],
           pageLength: 10,
           responsive: true,
-          language: {
-            url: "https://cdn.datatables.net/plug-ins/1.13.7/i18n/vi.json"
-          }
+          language: { url: "https://cdn.datatables.net/plug-ins/1.13.7/i18n/vi.json" }
         });
       } else {
+        // Cập nhật realtime khi refresh
         dataTable.clear();
         dataTable.rows.add(formattedData);
         dataTable.draw(false);
@@ -120,12 +97,12 @@
     catch (err) {
       console.error("Lỗi realtime:", err);
     }
-    finally {
-      setTimeout(() => showLoading(false), 300); // cho animation mượt
-    }
   }
 
+  // Load lần đầu
   loadData(true);
+
+  // Tự động làm mới sau mỗi X giây
   setInterval(() => loadData(false), REFRESH_TIME);
 </script>
 
