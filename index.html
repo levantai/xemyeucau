@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Danh sách yêu cầu</title>
+  <title>danhsachyeucau</title>
 
   <!-- Bootstrap 5 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -28,7 +28,7 @@
 <div class="container">
   <div class="card shadow">
     <div class="card-body">
-      <h3 class="mb-4 text-primary fw-bold"> Danh sách yêu cầu</h3>
+      <h3 class="mb-4 text-primary fw-bold">Danh sách yêu cầu</h3>
       <table id="sheetTable" class="table table-striped table-bordered" width="100%"></table>
     </div>
   </div>
@@ -55,24 +55,36 @@
       const header = json[0];
       const data = json.slice(1);
 
-      // Index cột ngày
       const DATE_COLUMN_INDEX = 0;
 
-      // Format ngày
       const formattedData = data.map(row => {
         let newRow = [...row];
+
+        let dateObj = new Date(row[DATE_COLUMN_INDEX]);
         newRow[DATE_COLUMN_INDEX] = formatVNDate(row[DATE_COLUMN_INDEX]);
+
+        // 👉 Thêm cột timestamp để sort đúng
+        newRow.push(dateObj.getTime());
+
         return newRow;
       });
 
+      // 👉 Thêm 1 cột ẩn để sort
+      header.push("sort_date_hidden");
+
       $("#sheetTable").DataTable({
         data: formattedData,
-        columns: header.map(h => ({ title: h })),
+        columns: header.map((h, idx) => ({
+          title: h,
+          visible: h === "sort_date_hidden" ? false : true
+        })),
         pageLength: 10,
         responsive: true,
-        language: {
-          url: "https://cdn.datatables.net/plug-ins/1.13.7/i18n/vi.json"
-        }
+
+        // 🔥 Sort cột ngày theo timestamp (cột ẩn) giảm dần
+        order: [[header.length - 1, "desc"]],
+
+        language: { url: "https://cdn.datatables.net/plug-ins/1.13.7/i18n/vi.json" }
       });
     })
     .catch(err => {
