@@ -44,32 +44,33 @@
   fetch(API_URL)
     .then(res => res.json())
     .then(json => {
+      const header = json[0];   // dòng tiêu đề
+      const data = json.slice(1); // dữ liệu
 
-      const header = json[0];       // tiêu đề
-      const data = json.slice(1);   // dữ liệu
+      const DATE_COLUMN_INDEX = 0; // cột ngày
 
-      // Giả sử cột ngày là cột đầu tiên (index = 0)
-      const processedData = data.map(row => {
-        if (row[0]) {
-          row[0] = formatDateVN(row[0]);
-        }
-        return row;
+      // Format ngày
+      const formattedData = data.map(row => {
+        let newRow = [...row];
+        newRow[DATE_COLUMN_INDEX] = formatVNDate(row[DATE_COLUMN_INDEX]);
+        return newRow;
       });
 
       $("#sheetTable").DataTable({
-        data: processedData,
+        data: formattedData,
         columns: header.map(h => ({ title: h })),
         pageLength: 10,
         responsive: true,
+
+        // 🔥 GIAO DIỆN TIẾNG VIỆT
         language: {
           url: "https://cdn.datatables.net/plug-ins/1.13.7/i18n/vi.json"
         }
       });
-
     })
     .catch(err => {
-      console.error("Lỗi tải dữ liệu:", err);
-      alert("Không thể tải dữ liệu!");
+      console.error("LỖI:", err);
+      alert("Không tải được dữ liệu từ Google Sheet!");
     });
 </script>
 
