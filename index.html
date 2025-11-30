@@ -13,7 +13,7 @@
   <!-- jQuery -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-  <!-- DataTables + Bootstrap JS -->
+  <!-- DataTables JS -->
   <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
 
@@ -35,10 +35,11 @@
 </div>
 
 <script>
-  // API Google Sheet
   const API_URL = "https://script.google.com/macros/s/AKfycbyFy-59jdIR1J9e-WCZ0BdOO8XW-EbaD8GsoSRBDK-AI1hovguUE1oYGvfburFp13PQnA/exec";
+  const REFRESH_TIME = 10000; // 10 giây refresh 1 lần
+  let dataTable;
 
-  // Format ngày yyyy-mm-dd → dd/mm/yyyy
+  // Format yyyy-mm-dd → dd/mm/yyyy
   function formatVNDate(dateStr) {
     if (!dateStr) return "";
     let d = new Date(dateStr);
@@ -49,48 +50,60 @@
     return `${day}/${month}/${year}`;
   }
 
-  fetch(API_URL)
-    .then(res => res.json())
-    .then(json => {
+  async function loadData(firstLoad = false) {
+    try {
+      const res = await fetch(API_URL);
+      const json = await res.json();
+
       const header = json[0];
       const data = json.slice(1);
 
-      const DATE_COLUMN_INDEX = 0;
+      const DATE_INDEX = 0;
 
       const formattedData = data.map(row => {
         let newRow = [...row];
 
-        let dateObj = new Date(row[DATE_COLUMN_INDEX]);
-        newRow[DATE_COLUMN_INDEX] = formatVNDate(row[DATE_COLUMN_INDEX]);
+        let d = new Date(row[DATE_INDEX]);
+        newRow[DATE_INDEX] = formatVNDate(row[DATE_INDEX]);
 
-        // 👉 Thêm cột timestamp để sort đúng
-        newRow.push(dateObj.getTime());
-
+        // Timestamp hidden for sorting
+        newRow.push(d.getTime());
         return newRow;
       });
 
-      // 👉 Thêm 1 cột ẩn để sort
-      header.push("sort_date_hidden");
+      // Add hidden sort column
+      header.push("hidden_sort_date");
 
-      $("#sheetTable").DataTable({
-        data: formattedData,
-        columns: header.map((h, idx) => ({
-          title: h,
-          visible: h === "sort_date_hidden" ? false : true
-        })),
-        pageLength: 10,
-        responsive: true,
+      if (firstLoad) {
+        // Khởi tạo DataTable lần đầu
+        dataTable = $("#sheetTable").DataTable({
+          data: formattedData,
+          columns: header.map((h, idx) => ({
+            title: h,
+            visible: h === "hidden_sort_date" ? false : true
+          })),
+          order: [[header.length - 1, "desc"]],
+          pageLength: 10,
+          responsive: true,
+          language: { url: "https://cdn.datatables.net/plug-ins/1.13.7/i18n/vi.json" }
+        });
+      } else {
+        // Cập nhật realtime khi refresh
+        dataTable.clear();
+        dataTable.rows.add(formattedData);
+        dataTable.draw(false);
+      }
+    }
+    catch (err) {
+      console.error("Lỗi realtime:", err);
+    }
+  }
 
-        // 🔥 Sort cột ngày theo timestamp (cột ẩn) giảm dần
-        order: [[header.length - 1, "desc"]],
+  // Load lần đầu
+  loadData(true);
 
-        language: { url: "https://cdn.datatables.net/plug-ins/1.13.7/i18n/vi.json" }
-      });
-    })
-    .catch(err => {
-      console.error("LỖI:", err);
-      alert("Không tải được dữ liệu!");
-    });
+  // Tự động làm mới sau mỗi X giây
+  setInterval(() => loadData(false), REFRESH_TIME);
 </script>
 
 </body>
