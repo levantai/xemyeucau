@@ -2,39 +2,47 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>xem yeu cau</title>
+  <title>Danh sách yêu cầu</title>
 
-  <!-- DataTables CSS -->
-  <link rel="stylesheet" 
-        href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- DataTables Bootstrap 5 -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
 
   <!-- jQuery -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-  <!-- DataTables JS -->
+  <!-- DataTables + Bootstrap JS -->
   <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
 
   <style>
-    body { font-family: Arial; padding: 20px; }
-    h2 { margin-bottom: 20px; }
+    body { padding: 30px; background: #f8f9fa; }
+    .card { border-radius: 12px; }
   </style>
 </head>
 
 <body>
 
-<h2>Danh sách yêu cầu</h2>
-
-<table id="sheetTable" class="display" width="100%"></table>
+<div class="container">
+  <div class="card shadow">
+    <div class="card-body">
+      <h3 class="mb-4 text-primary fw-bold"> Danh sách yêu cầu</h3>
+      <table id="sheetTable" class="table table-striped table-bordered" width="100%"></table>
+    </div>
+  </div>
+</div>
 
 <script>
-  // 🔥 API Google Sheet
+  // API Google Sheet
   const API_URL = "https://script.google.com/macros/s/AKfycbyFy-59jdIR1J9e-WCZ0BdOO8XW-EbaD8GsoSRBDK-AI1hovguUE1oYGvfburFp13PQnA/exec";
 
-  // Hàm định dạng ngày yyyy-mm-dd → dd/mm/yyyy
+  // Format ngày yyyy-mm-dd → dd/mm/yyyy
   function formatVNDate(dateStr) {
     if (!dateStr) return "";
     let d = new Date(dateStr);
-    if (isNaN(d)) return dateStr; // nếu không parse được thì trả nguyên
+    if (isNaN(d)) return dateStr;
     let day = String(d.getDate()).padStart(2, "0");
     let month = String(d.getMonth() + 1).padStart(2, "0");
     let year = d.getFullYear();
@@ -44,10 +52,11 @@
   fetch(API_URL)
     .then(res => res.json())
     .then(json => {
-      const header = json[0];   // dòng tiêu đề
-      const data = json.slice(1); // dữ liệu
+      const header = json[0];
+      const data = json.slice(1);
 
-      const DATE_COLUMN_INDEX = 0; // cột ngày
+      // Index cột ngày
+      const DATE_COLUMN_INDEX = 0;
 
       // Format ngày
       const formattedData = data.map(row => {
@@ -61,8 +70,6 @@
         columns: header.map(h => ({ title: h })),
         pageLength: 10,
         responsive: true,
-
-        // 🔥 GIAO DIỆN TIẾNG VIỆT
         language: {
           url: "https://cdn.datatables.net/plug-ins/1.13.7/i18n/vi.json"
         }
@@ -70,7 +77,7 @@
     })
     .catch(err => {
       console.error("LỖI:", err);
-      alert("Không tải được dữ liệu từ Google Sheet!");
+      alert("Không tải được dữ liệu!");
     });
 </script>
 
